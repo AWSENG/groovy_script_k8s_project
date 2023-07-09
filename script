@@ -30,7 +30,8 @@ node {
      stage ('Push Docker Images to DockerHub'){
          sshagent(['ansible-demo']) {
              withCredentials([string(credentialsId: 'dockerhub_passwd', variable: 'dockerhub_passwd')]) {
-                sh "docker login -u shazabtanveer -p ${dockerhub_passwd}"
+                     sh 'docker login -u shazabtanveer -p $dockerhub_passwd'
+
                      sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image push shazabtanveer/$JOB_NAME:v1.$BUILD_ID'
                      sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image push shazabtanveer/$JOB_NAME:latest'
 
