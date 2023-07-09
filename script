@@ -1,0 +1,33 @@
+node {
+    
+    stage('Git Checkout'){
+        git ' https://github.com/AWSENG/Kubernetes_Project'
+    }
+        stage('Sending Dockerfile to Ansible Server Over SSH'){
+            sshagent(['ansible-demo']) {
+                sh 'ssh -o StrictHostKeyChecking=no  ubuntu@ansible_server_private_ip'
+                sh 'scp /var/lib/jenkins/workspace/project/* ubuntu@ansible_server_private_ip:/home/ubuntu'
+}
+    }
+    
+        stage('Docker Build Image'){
+            sshagent(['ansible-demo']){
+                stage('Docker Build Image') {
+                    sshagent(['ansible-demo']) {
+                sh 'ssh -o StrictHostKeyChecking=no -A ubuntu@ansible_server_private_ip "cd /home/ubuntu && sudo docker image build -t $JOB_NAME:v1.$BUILD_ID ."'
+    }
+}
+        stage('Docker image tagging'){
+                sshagent(['ansible-demo']){
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@ansible_server_private_ip cd /home/ubuntu'
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@ansible_server_private_ip sudo docker image tag $JOB_NAME:v1.$BUILD_ID shazabtanveer/$JOB_NAME:v1.$BUILD_ID'
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@ansible_server_private_ip sudo docker image tag $JOB_NAME:v1.$BUILD_ID shazabtanveer/$JOB_NAME:latest'
+
+                }
+        }
+        
+     
+}
+ 
+    }
+}
