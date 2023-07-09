@@ -5,8 +5,8 @@ node {
     }
         stage('Sending Dockerfile to Ansible Server Over SSH'){
             sshagent(['ansible-demo']) {
-                sh 'ssh -o StrictHostKeyChecking=no  ubuntu@ansible_server_private_ip'
-                sh 'scp /var/lib/jenkins/workspace/project/* ubuntu@ansible_server_private_ip:/home/ubuntu'
+                sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244'
+                sh 'scp /var/lib/jenkins/workspace/project/* ubuntu@172.31.81.244:/home/ubuntu'
 }
     }
     
@@ -14,19 +14,29 @@ node {
             sshagent(['ansible-demo']){
                 stage('Docker Build Image') {
                     sshagent(['ansible-demo']) {
-                sh 'ssh -o StrictHostKeyChecking=no -A ubuntu@ansible_server_private_ip "cd /home/ubuntu && sudo docker image build -t $JOB_NAME:v1.$BUILD_ID ."'
+                sh 'ssh -o StrictHostKeyChecking=no -A ubuntu@172.31.81.244 "cd /home/ubuntu && sudo docker image build -t $JOB_NAME:v1.$BUILD_ID ."'
     }
+                }
 }
         stage('Docker image tagging'){
                 sshagent(['ansible-demo']){
-                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@ansible_server_private_ip cd /home/ubuntu'
-                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@ansible_server_private_ip sudo docker image tag $JOB_NAME:v1.$BUILD_ID shazabtanveer/$JOB_NAME:v1.$BUILD_ID'
-                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@ansible_server_private_ip sudo docker image tag $JOB_NAME:v1.$BUILD_ID shazabtanveer/$JOB_NAME:latest'
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 cd /home/ubuntu'
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image tag $JOB_NAME:v1.$BUILD_ID shazabtanveer/$JOB_NAME:v1.$BUILD_ID'
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image tag $JOB_NAME:v1.$BUILD_ID shazabtanveer/$JOB_NAME:latest'
 
                 }
         }
         
-     
+     stage ('Push Docker Images to DockerHub'){
+         sshagent(['ansible-demo']) {
+             withCredentials([string(credentialsId: 'dockerhub_passwd', variable: 'dockerhub_passwd')]) {
+                sh "docker login -u shazabtanveer -p ${dockerhub_passwd}"
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image push shazabtanveer/$JOB_NAME:v1.$BUILD_ID'
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image push shazabtanveer/$JOB_NAME:latest'
+
+            
+}
+     }
 }
  
     }
