@@ -34,11 +34,20 @@ node {
 
                      sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image push shazabtanveer/$JOB_NAME:v1.$BUILD_ID'
                      sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image push shazabtanveer/$JOB_NAME:latest'
-
-            
+                     sh 'ssh -o StrictHostKeyChecking=no  ubuntu@172.31.81.244 sudo docker image rm shazabtanveer/$JOB_NAME:v1.$BUILD_ID shazabtanveer/$JOB_NAME:latest $JOB_NAME:v1.$BUILD_ID'
 }
      }
 }
+    stage ('Copy Files from ansible to K8S Server'){
+                
+                sshagent(['kubernetes']) {
+            sh 'ssh  -o StrictHostKeyChecking=no ubuntu@172.31.80.101'
+            sh 'scp /var/lib/jenkins/workspace/project/* ubuntu@172.31.80.101:/home/ubuntu'
+}
+        
+        
+        
+    }
  
     }
 }
