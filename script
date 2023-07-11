@@ -40,7 +40,8 @@ node {
 }
     stage ('Copy Files from ansible to K8S Server'){
                 
-                sshagent(['kubernetes']) {
+                sshagent(['my-k8s']) {
+             
             sh 'ssh  -o StrictHostKeyChecking=no ubuntu@172.31.80.101'
             sh 'scp /var/lib/jenkins/workspace/project/* ubuntu@172.31.80.101:/home/ubuntu'
 }
@@ -48,6 +49,16 @@ node {
         
         
     }
+ 
+ stage ('Kubernetes deployment using ansible'){
+     sshagent(['ansible-demo']) {
+    sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.81.244 cd /home/ubuntu'
+    sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.81.244 ansible -m ping node'
+    sh 'ssh -o StrictHostKeyChecking=no ubuntu@172.31.81.244 ansible-playbook ansible.yml'
+}
+     
+ }
+ 
  
     }
 }
